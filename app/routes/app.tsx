@@ -26,6 +26,7 @@ export default function App() {
           Home
         </Link>
         <Link to="/app/settings">Settings</Link>
+        <Link to="/app/products">Processing Times</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>
