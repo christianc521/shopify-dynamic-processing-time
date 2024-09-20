@@ -8,7 +8,7 @@ export type ProductsQueryVariables = AdminTypes.Exact<{
 }>;
 
 
-export type ProductsQuery = { products: { nodes: Array<Pick<AdminTypes.Product, 'id' | 'handle'>> } };
+export type ProductsQuery = { products: { nodes: Array<Pick<AdminTypes.Product, 'id' | 'title'>> } };
 
 export type PopulateProductMutationVariables = AdminTypes.Exact<{
   input: AdminTypes.ProductInput;
@@ -28,13 +28,52 @@ export type ShopifyRemixTemplateUpdateVariantMutationVariables = AdminTypes.Exac
 
 export type ShopifyRemixTemplateUpdateVariantMutation = { productVariantsBulkUpdate?: AdminTypes.Maybe<{ productVariants?: AdminTypes.Maybe<Array<Pick<AdminTypes.ProductVariant, 'id' | 'price' | 'barcode' | 'createdAt'>>> }> };
 
+export type GetAssemblyTimeMetafieldQueryVariables = AdminTypes.Exact<{
+  productId: AdminTypes.Scalars['ID']['input'];
+}>;
+
+
+export type GetAssemblyTimeMetafieldQuery = { product?: AdminTypes.Maybe<{ metafield?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'id' | 'value'>> }> };
+
+export type GetUnfulfilledOrdersQueryVariables = AdminTypes.Exact<{
+  query: AdminTypes.Scalars['String']['input'];
+}>;
+
+
+export type GetUnfulfilledOrdersQuery = { orders: { edges: Array<{ node: (
+        Pick<AdminTypes.Order, 'id'>
+        & { lineItems: { edges: Array<{ node: (
+              Pick<AdminTypes.LineItem, 'quantity' | 'fulfillableQuantity'>
+              & { product?: AdminTypes.Maybe<Pick<AdminTypes.Product, 'id'>> }
+            ) }> } }
+      ) }> } };
+
+export type MetafieldsSetProcessingMutationVariables = AdminTypes.Exact<{
+  metafields: Array<AdminTypes.MetafieldsSetInput> | AdminTypes.MetafieldsSetInput;
+}>;
+
+
+export type MetafieldsSetProcessingMutation = { metafieldsSet?: AdminTypes.Maybe<{ metafields?: AdminTypes.Maybe<Array<Pick<AdminTypes.Metafield, 'id' | 'value'>>>, userErrors: Array<Pick<AdminTypes.MetafieldsSetUserError, 'field' | 'message'>> }> };
+
+export type WebhookSubscriptionCreateMutationVariables = AdminTypes.Exact<{
+  topic: AdminTypes.WebhookSubscriptionTopic;
+  webhookSubscription: AdminTypes.WebhookSubscriptionInput;
+}>;
+
+
+export type WebhookSubscriptionCreateMutation = { webhookSubscriptionCreate?: AdminTypes.Maybe<{ userErrors: Array<Pick<AdminTypes.UserError, 'field' | 'message'>>, webhookSubscription?: AdminTypes.Maybe<Pick<AdminTypes.WebhookSubscription, 'id'>> }> };
+
 interface GeneratedQueryTypes {
-  "#graphql\n    query products($first: Int!) {\n      products(first: $first) {\n        nodes {\n          id\n          handle\n        }\n      }\n    }\n    ": {return: ProductsQuery, variables: ProductsQueryVariables},
+  "#graphql\n    query products($first: Int!) {\n      products(first: $first) {\n        nodes {\n          id\n          title\n        }\n      }\n    }\n    ": {return: ProductsQuery, variables: ProductsQueryVariables},
+  "\n  #graphql\n  query GetAssemblyTimeMetafield($productId: ID!) {\n    product(id: $productId) {\n      metafield(namespace: \"assembly_info\", key: \"assembly_time\") {\n        id\n        value\n      }\n    }\n  }\n": {return: GetAssemblyTimeMetafieldQuery, variables: GetAssemblyTimeMetafieldQueryVariables},
+  "\n  #graphql\n  query GetUnfulfilledOrders($query: String!) {\n    orders(query: $query, first: 100) {\n      edges {\n        node {\n          id\n          lineItems(first: 100) {\n            edges {\n              node {\n                product {\n                  id\n                }\n                quantity\n                fulfillableQuantity\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n": {return: GetUnfulfilledOrdersQuery, variables: GetUnfulfilledOrdersQueryVariables},
 }
 
 interface GeneratedMutationTypes {
   "#graphql\n      mutation populateProduct($input: ProductInput!) {\n        productCreate(input: $input) {\n          product {\n            id\n            title\n            handle\n            status\n            variants(first: 10) {\n              edges {\n                node {\n                  id\n                  price\n                  barcode\n                  createdAt\n                }\n              }\n            }\n          }\n        }\n      }": {return: PopulateProductMutation, variables: PopulateProductMutationVariables},
   "#graphql\n    mutation shopifyRemixTemplateUpdateVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {\n      productVariantsBulkUpdate(productId: $productId, variants: $variants) {\n        productVariants {\n          id\n          price\n          barcode\n          createdAt\n        }\n      }\n    }": {return: ShopifyRemixTemplateUpdateVariantMutation, variables: ShopifyRemixTemplateUpdateVariantMutationVariables},
+  "\n  #graphql\n  mutation MetafieldsSetProcessing($metafields: [MetafieldsSetInput!]!) {\n    metafieldsSet(metafields: $metafields) {\n      metafields {\n        id\n        value\n      }\n      userErrors {\n        field\n        message\n      }\n    }\n  }\n": {return: MetafieldsSetProcessingMutation, variables: MetafieldsSetProcessingMutationVariables},
+  "\n      #graphql\n      mutation webhookSubscriptionCreate($topic: WebhookSubscriptionTopic!, $webhookSubscription: WebhookSubscriptionInput!) {\n        webhookSubscriptionCreate(topic: $topic, webhookSubscription: $webhookSubscription) {\n          userErrors {\n            field\n            message\n          }\n          webhookSubscription {\n            id\n          }\n        }\n      }\n    ": {return: WebhookSubscriptionCreateMutation, variables: WebhookSubscriptionCreateMutationVariables},
 }
 declare module '@shopify/admin-api-client' {
   type InputMaybe<T> = AdminTypes.InputMaybe<T>;

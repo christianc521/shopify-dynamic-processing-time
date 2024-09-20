@@ -36,7 +36,7 @@ if (host === "localhost") {
 
 export default defineConfig({
   server: {
-    port: Number(process.env.PORT || 3000),
+    port: Number(3000),
     hmr: hmrConfig,
     fs: {
       // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information

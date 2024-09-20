@@ -57,7 +57,7 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ error: 'Product and assembly time are required.' }, { status: 400 });
   }
 
-  const { admin } = await authenticate.admin(request);
+  const { admin, session} = await authenticate.admin(request);
 
   // Use the Shopify Admin API to update the metafield
   const mutation = `
@@ -100,7 +100,35 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ error: errorMessage }, { status: 500 });
   }
 
-  // Redirect or return success
+const order = new admin.rest.resources.Order({session: session});
+
+order.line_items = [
+  {
+    "title": "Big Brown Bear Boots",
+    "price": 74.99,
+    "grams": "1300",
+    "quantity": 3,
+    "tax_lines": [
+      {
+        "price": 13.5,
+        "rate": 0.06,
+        "title": "State tax"
+      }
+    ]
+  }
+];
+order.transactions = [
+  {
+    "kind": "sale",
+    "status": "success",
+    "amount": 238.47
+  }
+];
+order.total_tax = 13.5;
+order.currency = "EUR";
+await order.save({
+  update: true,
+});
   return redirect('/app/products?success=true');
 };
 

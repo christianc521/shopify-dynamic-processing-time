@@ -59,6 +59,7 @@ import { Session, GraphqlClient } from '@shopify/shopify-api';
 
 // Handler for order-related webhooks
 export async function handleOrderUpdate(topic: string, shop: string, body: string) {
+  console.log(`Handling ${topic} webhook for shop ${shop}`);
   try {
     // Parse the webhook payload
     const payload = JSON.parse(body);
@@ -72,6 +73,7 @@ export async function handleOrderUpdate(topic: string, shop: string, body: strin
 
 // Handler for app uninstalled webhook
 export async function handleAppUninstalled(topic: string, shop: string, body: string) {
+  console.log(`Handling ${topic} webhook for shop ${shop}`);
   try {
     // Perform any cleanup tasks needed when the app is uninstalled
     console.log(`App uninstalled for shop ${shop}`);
@@ -89,6 +91,7 @@ export async function handleAppUninstalled(topic: string, shop: string, body: st
 
 // Helper function to update processing times for products in an order
 async function updateProductProcessingTimes(orderData: any, shop: string) {
+  
   // Get an authenticated admin client for the shop
   const client = await getAdminClient(shop);
 
@@ -245,7 +248,7 @@ async function getTotalUnfulfilledQuantity(client: GraphqlClient, productId: str
       }
     }
   }
-
+  console.log("Total unfilled orders quantity: ", totalUnfulfilledQuantity);
   return totalUnfulfilledQuantity;
 }
 
