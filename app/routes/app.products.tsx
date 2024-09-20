@@ -1,7 +1,8 @@
-import { LoaderFunction, json } from "@remix-run/node";
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData, Form, useActionData } from '@remix-run/react';
+import { LoaderFunction, ActionFunction, json, redirect } from "@remix-run/node";
+import { useState } from 'react';
+import { TextField, Button, Select, FormLayout, Frame, Toast } from '@shopify/polaris';
 import shopify, { authenticate } from "app/shopify.server";
-
 // Define the Product interface
 interface Product {
   id: string;
@@ -20,8 +21,8 @@ interface ShopifyGraphQLResponse {
 export const loader: LoaderFunction = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
 
-  // Make the GraphQL request with correct types
-  const response: ShopifyGraphQLResponse = await admin.graphql(
+  // Make the GraphQL request
+  const response = await admin.graphql(
     `#graphql
     query products($first: Int!) {
       products(first: $first) {
@@ -35,35 +36,128 @@ export const loader: LoaderFunction = async ({ request }) => {
     { variables: { first: 5 } } // Fetch 5 products as an example
   );
 
-  // Extract the products from the response
-  const products = response;
+  const data = await response.json();
 
+  const products: Product[] = data.data.products.nodes;
+
+  
   // Log for debugging purposes
-  console.log('products: ', json({ products }));
+  console.log('products: ', products);
 
   // Return the products as JSON for the frontend
-  return products;
+  return json({ products });
+};
+
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  const productId = formData.get('productId') as string;
+  const assemblyTime = formData.get('assemblyTime') as string;
+
+  if (!productId || !assemblyTime) {
+    return json({ error: 'Product and assembly time are required.' }, { status: 400 });
+  }
+
+  const { admin } = await authenticate.admin(request);
+
+  // Use the Shopify Admin API to update the metafield
+  const mutation = `
+    mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
+      metafieldsSet(metafields: $metafields) {
+        metafields {
+          id
+          namespace
+          key
+          value
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    metafields: [
+      {
+        namespace: 'assembly_info',
+        key: 'assembly_time',
+        value: assemblyTime,
+        type: 'number_integer',
+        ownerId: productId,
+      },
+    ],
+  };
+
+  const mutationResponse = await admin.graphql(mutation, { variables });
+  const mutationData = await mutationResponse.json();
+
+  // Check for errors in the response
+  if (mutationData.errors || mutationData.data.metafieldsSet.userErrors.length > 0) {
+    const errorMessage = mutationData.errors
+      ? mutationData.errors[0].message
+      : mutationData.data.metafieldsSet.userErrors[0].message;
+    return json({ error: errorMessage }, { status: 500 });
+  }
+
+  // Redirect or return success
+  return redirect('/app/products?success=true');
 };
 
 export default function AssemblyTimeForm() {
-  // Use the loader data and type it as an array of products
   const { products } = useLoaderData<{ products: Product[] }>();
+  const actionData = useActionData();
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [assemblyTime, setAssemblyTime] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
-  // Check if products is defined and is an array
-  if (!products || products.length === 0) {
-    return <p>No products available.</p>;
+  // Handle success toast
+  const urlParams = new URLSearchParams(window.location.search);
+  const successParam = urlParams.get('success');
+
+  if (successParam && !showToast) {
+    setShowToast(true);
   }
 
+  // Map products to options for the Select component
+  const productOptions = products.map((product) => ({
+    label: product.title,
+    value: product.id,
+  }));
+
   return (
-    <div>
+    <Frame>
       <h1>Set Assembly Time for Products</h1>
-      <ul>
-        {products.map((product) => (
-          <li key={product.id}>
-            <h2>{product.title}</h2>
-          </li>
-        ))}
-      </ul>
-    </div>
+      <Form method="post">
+        <FormLayout>
+          <Select
+            label="Select Product"
+            options={productOptions}
+            value={selectedProductId}
+            onChange={(value) => setSelectedProductId(value)}
+            placeholder="Choose a product"
+            name="productId"
+          />
+          <TextField
+            label="Assembly Time (in hours)"
+            value={assemblyTime}
+            onChange={(value) => setAssemblyTime(value)}
+            type="number"
+            min={1}
+            name="assemblyTime"
+          />
+          <Button submit primary>
+            Save Assembly Time
+          </Button>
+        </FormLayout>
+      </Form>
+      {actionData?.error && <p style={{ color: 'red' }}>{actionData.error}</p>}
+      {showToast && (
+        <Toast
+          content="Assembly time updated successfully!"
+          onDismiss={() => setShowToast(false)}
+        />
+      )}
+    </Frame>
   );
 }
