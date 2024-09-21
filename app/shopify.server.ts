@@ -17,7 +17,7 @@ const shopify = shopifyApp({
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.July24,
   scopes: ['read_products', 'write_products', 'read_orders', 'write_orders', 'read_metafields', 'write_metafields'],
-  appUrl: "https://090b-2601-249-8d01-e50-aa7-570e-86f6-2059.ngrok-free.app",
+  appUrl: "https://72f3-2601-249-8d01-e50-aa7-570e-86f6-2059.ngrok-free.app",
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
