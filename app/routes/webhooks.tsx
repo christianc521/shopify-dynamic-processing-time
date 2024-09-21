@@ -1,21 +1,28 @@
 import { ActionFunction } from '@remix-run/node';
-import { authenticate } from '~/shopify.server';
+import {type ActionFunctionArgs} from '@remix-run/node';
+import { authenticate } from '../shopify.server';
 import { Session, GraphqlClient } from '@shopify/shopify-api';
 import db from '../db.server'; // Adjust the import path based on your project structure
 
-export const action: ActionFunction = async ({ request }) => {
-  const { topic, shop, session } = await authenticate.webhook(request);
+export const action: ActionFunction = async ({request}: ActionFunctionArgs) => {
+  console.log("webhook action called");
+  const { shop, topic, session, payload } = await authenticate.webhook(request);
+  console.log("webhook authenticated. topic: ", topic, " session: ", session, " shop: ", shop);
 
   switch (topic) {
     case 'orders/create':
     case 'orders/fulfilled':
-    case 'orders/cancelled':
+    case 'ORDERS_CREATE':
       try {
         // Parse the request body to get the order data
-        const payload = await request.json();
-
+        console.log('ORDERS_CREATE called');
+        
+        // console.log("payload created: ", payload);
         // Update product processing times based on the order data and shop
-        await updateProductProcessingTimes(payload, shop);
+        let payloadJSON = JSON.stringify(payload);
+        console.log(payloadJSON);
+        
+        await updateProductProcessingTimes(payloadJSON, shop);
       } catch (error) {
         console.error(`Error handling ${topic} webhook for shop ${shop}:`, error);
         throw new Response('Internal Server Error', { status: 500 });
@@ -47,7 +54,7 @@ export const action: ActionFunction = async ({ request }) => {
 async function updateProductProcessingTimes(orderData: any, shop: string) {
   // Get an authenticated admin client for the shop
   const client = await getAdminClient(shop);
-
+  console.log("authenticated admin client created")
   // Extract line items from the order
   const lineItems = orderData.line_items;
 
