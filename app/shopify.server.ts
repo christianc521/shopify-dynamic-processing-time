@@ -23,6 +23,7 @@ const shopify = shopifyApp({
   distribution: AppDistribution.AppStore,
   restResources,
   isEmbeddedApp: true,
+  isCustomStoreApp: false,
   future: {
     wip_optionalScopesApi: true,
     unstable_newEmbeddedAuthStrategy: true,
