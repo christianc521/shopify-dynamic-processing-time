@@ -184,40 +184,8 @@ try {
 }
 }
 
-
-// // Helper function to get an authenticated admin GraphQL client
-// async function getAdminClient(shopDomain: string, accessToken: string): Promise<GraphqlClient> {
-// // Fetch the session for the shop from your session storage
-// const sessionData = await prisma.session.findFirst({
-//   where: {
-//     shop: shopDomain,
-//   },
-// });
-
-// if (!sessionData || !sessionData.accessToken) {
-//   throw new Error(`No valid session found for shop ${shopDomain}`);
-// }
-
-// // Create a new Session object
-// const session = new Session({
-//   id: sessionData.id,
-//   shop: shopDomain,
-//   state: sessionData.state,
-//   isOnline: sessionData.isOnline,
-//   accessToken: sessionData.accessToken,
-//   scope: sessionData.scope ? sessionData.scope : undefined,
-//   expires: sessionData.expires ? new Date(sessionData.expires) : undefined,
-// });
-
-// // Create a new admin GraphQL client
-// const client = new shopify.clients.Graphql({session});
-
-
-// return client;
-// }
-
 // Update processing time for a single product
-async function updateProcessingTimeForProduct(admin: GraphQLClient<AdminOperations>, productId: string) {
+export async function updateProcessingTimeForProduct(admin: GraphQLClient<AdminOperations>, productId: string) {
   // Fetch the product's assembly time metafield
   console.log("about to call getAssemblyTimeMetafield from updateProcessingTimeForProduct on product :", productId);
   const assemblyTimeMetafield = await getAssemblyTimeMetafield(admin, productId);

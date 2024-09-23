@@ -3,6 +3,7 @@ import { LoaderFunction, ActionFunction, json, redirect } from "@remix-run/node"
 import { useState } from 'react';
 import { TextField, Button, Select, FormLayout, Frame, Toast } from '@shopify/polaris';
 import shopify, { authenticate } from "app/shopify.server";
+import {updateProcessingTimeForProduct} from "./webhooks";
 // Define the Product interface
 interface Product {
   id: string;
@@ -99,6 +100,8 @@ export const action: ActionFunction = async ({ request }) => {
       : mutationData.data.metafieldsSet.userErrors[0].message;
     return json({ error: errorMessage }, { status: 500 });
   }
+
+  updateProcessingTimeForProduct(admin.graphql, productId);
 
 // const order = new admin.rest.resources.Order({session: session});
 

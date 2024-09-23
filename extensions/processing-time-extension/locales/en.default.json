@@ -1,0 +1,10 @@
+{
+  "ratings": {
+    "stars": {
+      "label": "product.metafields.processing_info.processing_time.value"
+    },
+    "home": {
+      "recommendationText": "Recommended Product!"
+    }
+  }
+}
